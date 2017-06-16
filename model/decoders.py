@@ -1,5 +1,6 @@
+import torch
 import torch.nn as nn
-
+import torch.autograd as autograd
 
 class Decoder(nn.Module):
 
@@ -19,12 +20,13 @@ class Decoder(nn.Module):
                                dropout=dropout,
                                bidirectional=bidirectional)
 
-        self.linear = nn.Linear(recurrent_layer_size, output_size)
+        self.linear = nn.Linear(hidden_size, output_size)
+        self.scale = autograd.Variable(torch.FloatTensor([1]), requires_grad = True)
 
-    def forward(self, x):
-
-        decoder_output, _ = self.decoder(x)
-
+    def forward(self, x, hidden):
+        decoder_output, next_hidden = self.decoder(x, hidden)
+        # use the last batch of outputs, so it should be [:, -1, :]
         linear_output = self.linear(decoder_output[:, -1, :])
+        output = self.scale.expand_as(linear_output) * linear_output
 
-        return linear_output
+        return output, decoder_output, next_hidden

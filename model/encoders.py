@@ -20,6 +20,6 @@ class Encoder(nn.Module):
 
     def forward(self, x, hidden):
 
-        _, encoder_state = self.encoder(x, hidden)
+        encoder_output, encoder_state = self.encoder(x, hidden)
 
-        return encoder_state
+        return encoder_output, encoder_state
